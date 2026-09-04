@@ -73,3 +73,14 @@ export const listMachinesSchema = paginationSchema
     search: z.string().max(120).optional(),
   })
   .strict();
+
+/**
+ * QR resolution path parameter. Deliberately loose here (any short string):
+ * the strict machine-reference rules live in `parseMachineQrValue`, so a
+ * tampered value gets an explicit 400 rather than a generic param error.
+ */
+export const qrValueParamSchema = z
+  .string()
+  .trim()
+  .min(1, 'A QR value is required.')
+  .max(100, 'A machine QR code is at most 100 characters.');

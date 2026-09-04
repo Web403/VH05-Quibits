@@ -169,6 +169,7 @@ export const AUDIT_ACTIONS = {
   machineUpdated: 'machine.updated',
   machineDeleted: 'machine.deleted',
   machineModelChanged: 'machine.model_changed',
+  machineQrResolved: 'machine.qr_resolved',
   manualCreated: 'manual.created',
   manualUpdated: 'manual.updated',
   manualDeleted: 'manual.deleted',

@@ -42,6 +42,26 @@ export function ragRateLimiter(): RateLimitRequestHandler {
   });
 }
 
+/**
+ * Applied to machine QR resolution.
+ *
+ * The QR value grants nothing by itself, but a free endpoint would let anyone
+ * with a token enumerate asset tags cheaply. 60/min per IP is far above field
+ * needs (a technician scans a handful of machines) and far below what tag
+ * brute-forcing requires. Values are fixed rather than configurable: this
+ * deployment is a single local node (see this file's header).
+ */
+export function qrResolveRateLimiter(): RateLimitRequestHandler {
+  return rateLimit({
+    windowMs: 60_000,
+    limit: 60,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler: limitHandler,
+    skip: () => getConfig().isTest,
+  });
+}
+
 /** Applied to login/register/refresh. */
 export function authRateLimiter(): RateLimitRequestHandler {
   const config = getConfig();

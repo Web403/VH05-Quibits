@@ -704,7 +704,7 @@ export const apiClient = {
       method: 'POST',
       body: { currentPassword, newPassword },
     }),
-  updateMe: (body: { fullName?: string }) =>
+  updateMe: (body: { fullName?: string; preferences?: import('@itp/shared').UserPreferences | null }) =>
     dataOf<{ user: PublicUser }>('/users/me', { method: 'PATCH', body }),
   listUsers: () => dataOf<{ users: UserRecord[] }>('/users'),
   registerUser: (body: {

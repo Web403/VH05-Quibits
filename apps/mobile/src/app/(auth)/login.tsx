@@ -11,15 +11,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { useAuth } from '@/auth/auth-context';
 import { loginSchema, type LoginValues } from '@/validation/schemas';
 import { ApiError, errorMessage } from '@/api/errors';
 import { Button, TextField } from '@/components/ui';
 import { InlineBanner } from '@/components/states';
 import { isLoopbackBaseUrl } from '@/config/env';
-import { colors, spacing, type as typeScale } from '@/theme/tokens';
+import { spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function Login(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { login, expired, clearExpired } = useAuth();
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
@@ -127,7 +131,8 @@ export default function Login(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.lg, gap: spacing.md },
   brand: { color: colors.text, fontSize: 32, fontWeight: '800', textAlign: 'center', marginTop: spacing.xl },

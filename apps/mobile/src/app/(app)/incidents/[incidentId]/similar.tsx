@@ -1,3 +1,4 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 /**
  * Similar historical incidents.
  *
@@ -14,9 +15,12 @@ import { CachedNotice, EmptyState, ErrorState, InlineBanner, LoadingState } from
 import { incidentStatus, issueStatus, rootCauseStatus, severity as severityPresentation } from '@/lib/labels';
 import { errorMessage } from '@/api/errors';
 import { formatDate } from '@/lib/format';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function SimilarIncidentsScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { incidentId } = useLocalSearchParams<{ incidentId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -83,7 +87,8 @@ export default function SimilarIncidentsScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   header: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.sm },

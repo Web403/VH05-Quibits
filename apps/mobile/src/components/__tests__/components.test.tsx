@@ -38,6 +38,16 @@ describe('Button', () => {
     const { getByText } = render(<Button label="Save" loading />);
     expect(getByText('Working…')).toBeTruthy();
   });
+
+  it('keeps the icon out of the accessibility label and passes hints through', () => {
+    const { getByRole } = render(
+      <Button label="Scan Machine" icon="▣" accessibilityHint="Opens the camera" onPress={() => {}} />,
+    );
+    const button = getByRole('button');
+    // Screen readers announce the label only - never the glyph.
+    expect(button).toHaveProp('accessibilityLabel', 'Scan Machine');
+    expect(button).toHaveProp('accessibilityHint', 'Opens the camera');
+  });
 });
 
 describe('ChoiceGroup', () => {
@@ -80,6 +90,17 @@ describe('TextField', () => {
     fireEvent.changeText(getByLabelText('Title'), 'Pump down');
     expect(onChange).toHaveBeenCalledWith('Pump down');
     expect(getByText('Required')).toBeTruthy();
+  });
+
+  it('marks required fields visibly and in the accessibility label', () => {
+    const { getByText, getByLabelText } = render(
+      <TextField label="Machine code" value="" onChangeText={() => {}} required helper="Printed on the label" />,
+    );
+    expect(getByText(/Machine code/)).toBeTruthy();
+    expect(getByText(/\*/)).toBeTruthy();
+    expect(getByText('Printed on the label')).toBeTruthy();
+    // The requirement is announced, not just colour/text decoration.
+    getByLabelText('Machine code, required');
   });
 });
 

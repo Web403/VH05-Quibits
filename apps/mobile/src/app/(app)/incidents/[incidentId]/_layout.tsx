@@ -1,7 +1,9 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { Stack } from 'expo-router';
-import { colors } from '@/theme/tokens';
+
 
 export default function IncidentDetailLayout(): React.JSX.Element {
+  const { colors } = useTheme();
   return (
     <Stack
       screenOptions={{

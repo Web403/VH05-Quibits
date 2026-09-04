@@ -42,6 +42,7 @@ import {
 } from '../components/incident-badges';
 import { machineStatus, maintenanceType, processingStatus, severity } from '../lib/labels';
 import { formatBytes } from '../lib/format';
+import { MachineQrCard } from '../components/machine-qr-card';
 import './page.css';
 
 interface MachineDetailData {
@@ -179,6 +180,7 @@ export function MachineDetailPage(): JSX.Element {
               <p style={{ whiteSpace: 'pre-wrap' }}>{machine.notes}</p>
             </>
           )}
+          <MachineQrCard machine={machine} />
         </TabPanel>
 
         <TabPanel id="incidents" active={tab}>

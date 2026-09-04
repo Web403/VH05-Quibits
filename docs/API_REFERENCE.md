@@ -95,11 +95,15 @@ Authenticated. `{ "refreshToken"?, "allDevices"? }`
 
 ### `GET /auth/me` · `GET /users/me`
 
-Authenticated → `200` `{ user }`. Never includes the password hash.
+Authenticated → `200` `{ user }`. Never includes the password hash. The `user`
+includes `preferences` (`{ locale?, theme?, timezone? }`, `null` when unset);
+`theme` is one of `'light' | 'dark' | 'system'` — see THEME_MODES.md.
 
 ### `PATCH /users/me`
 
 Authenticated. Accepts **only** `fullName` and `preferences`. Sending `role`, `isActive`, or any other field → `422`.
+
+`preferences` is a strict object `{ locale?: string, theme?: 'light' | 'dark' | 'system', timezone?: string }`. The patch **replaces** the preferences document wholesale — merge any existing keys (e.g. `locale`) before sending a theme change.
 
 ### `POST /auth/change-password`
 
@@ -131,9 +135,38 @@ DELETE takes `{ "reason" }` and returns **409** if any machine or manual still r
 |---|---|---|
 | GET | `/machines` | `machine.read` |
 | GET | `/machines/:id` | `machine.read` |
+| GET | `/machines/resolve-qr/:qrValue` | `machine.read` (rate-limited 60/min per IP) |
 | POST | `/machines` | `machine.create` |
 | PATCH | `/machines/:id` | `machine.update` |
 | DELETE | `/machines/:id` | `machine.delete` |
+
+`GET /machines/resolve-qr/:qrValue` resolves a scanned or typed machine code
+(`machine:<asset-tag>` or a bare asset tag, case-insensitive). The QR value
+identifies the machine; it never authorizes access — the same 404 is
+returned for unknown, soft-deleted and foreign-organization machines, and
+malformed values are a 422. Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "machine": {
+      "id": "...",
+      "name": "Mill A",
+      "machineCode": "CNC-001",
+      "serialNumber": "SN-1001",
+      "machineModelId": "...",
+      "machineModelName": "Haas VF-2",
+      "location": { "site": "Plant 1", "line": "L2" },
+      "status": "operational",
+      "openIncidentCount": 0
+    }
+  }
+}
+```
+
+Successful resolutions are audit-logged (`machine.qr_resolved`). See
+`docs/MACHINE_QR_FORMAT.md` and `docs/QR_SECURITY_MODEL.md`.
 
 Create: `assetTag` (uppercased automatically), `machineModelId` required; `displayName`, `serialNumber`, `location{site,area,line,position}`, `status`, `installedAt`, `commissionedAt`, `criticality`, `notes`.
 

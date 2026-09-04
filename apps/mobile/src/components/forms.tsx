@@ -5,13 +5,15 @@
  */
 import { Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useEffect, useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Button } from './ui';
 import { LoadingState } from './states';
 import type { MachineView } from '@/api/types';
 import { useMachines } from '@/hooks/queries';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { colors, minTouchTarget, radius, spacing, type as typeScale } from '@/theme/tokens';
+import { minTouchTarget, radius, spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 import { Badge } from './ui';
 import { machineStatus } from '@/lib/labels';
 
@@ -28,6 +30,8 @@ export function MachinePicker({
   onSelect: (machine: MachineView) => void;
   title?: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [search, setSearch] = useState('');
   const debounced = useDebouncedValue(search, 350);
   const query = useMachines('picker', { search: debounced });
@@ -106,6 +110,8 @@ export function TagListInput({
   suggestions?: string[];
   testID?: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [draft, setDraft] = useState('');
 
   const commit = () => {
@@ -192,6 +198,8 @@ export function DateTimeField({
   onChange: (iso: string | undefined) => void;
   error?: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerDate, setPickerDate] = useState<Date>(() => (value ? new Date(value) : new Date()));
 
@@ -247,7 +255,8 @@ export function DateTimeField({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   modalScreen: { flex: 1, backgroundColor: colors.bg, padding: spacing.md, paddingTop: spacing.xl },
   modalTitle: { color: colors.text, fontSize: typeScale.heading, fontWeight: '700', marginBottom: spacing.md },
   searchInput: {

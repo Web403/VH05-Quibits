@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { useAuth } from '@/auth/auth-context';
 import { useRecents } from '@/hooks/queries';
 import { createConversation } from '@/api/endpoints';
@@ -15,9 +16,12 @@ import { InlineBanner, LoadingState } from '@/components/states';
 import { MachinePicker } from '@/components/forms';
 import type { MachineView } from '@/api/types';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function NewConversationScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { user } = useAuth();
   const userId = user?.id ?? '';
   const canAsk = can(user?.role, 'conversation.create');
@@ -101,7 +105,8 @@ export default function NewConversationScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   body: { padding: spacing.md },
   bodyText: { color: colors.textMuted, fontSize: 14, lineHeight: 20 },

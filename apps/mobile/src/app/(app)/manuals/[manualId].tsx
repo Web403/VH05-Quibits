@@ -10,6 +10,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { useAuth } from '@/auth/auth-context';
 import { useManual, useManualPages } from '@/hooks/queries';
 import { Badge, Button, Card, KeyValue } from '@/components/ui';
@@ -17,9 +18,12 @@ import { CachedNotice, EmptyState, ErrorState, InlineBanner, LoadingState } from
 import { processingStatus } from '@/lib/labels';
 import { formatBytes, formatDateTime, pagesLabel } from '@/lib/format';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing, type as typeScale } from '@/theme/tokens';
+import { spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function ManualDetailScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { manualId } = useLocalSearchParams<{ manualId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -108,7 +112,8 @@ export default function ManualDetailScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   title: { color: colors.text, fontSize: typeScale.heading, fontWeight: '800', marginBottom: spacing.sm },

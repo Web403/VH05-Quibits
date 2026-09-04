@@ -1,3 +1,4 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 /**
  * Base UI kit.
  *
@@ -6,7 +7,8 @@
  * Badge renders icon + label + tone.
  */
 import { Pressable, StyleSheet, Text, TextInput, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import { colors, minTouchTarget, radius, spacing, toneBg, toneColor, type as typeScale, type Tone } from '@/theme/tokens';
+import { minTouchTarget, radius, spacing, toneBg, toneColor, type as typeScale, type Tone } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 // --- Button -----------------------------------------------------------------
 
@@ -17,9 +19,16 @@ export interface ButtonProps {
   size?: 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
+  /**
+   * Decorative glyph shown before the label. Rendered as a separate,
+   * screen-reader-hidden element: the accessibility label is always exactly
+   * `label`, never "star report incident".
+   */
+  icon?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export function Button({
@@ -29,20 +38,25 @@ export function Button({
   size = 'md',
   disabled = false,
   loading = false,
+  icon,
   style,
   testID,
   accessibilityLabel,
+  accessibilityHint,
 }: ButtonProps): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const isDanger = variant === 'danger';
   const isGhost = variant === 'ghost';
   const bg = isDanger ? colors.errorBg : isGhost ? 'transparent' : variant === 'primary' ? colors.primary : colors.surfaceRaised;
-  const fg = isGhost ? colors.textMuted : variant === 'primary' ? '#ffffff' : isDanger ? colors.error : colors.text;
+  const fg = isGhost ? colors.textMuted : variant === 'primary' ? colors.onPrimary : isDanger ? colors.error : colors.text;
   const borderColor = isGhost ? 'transparent' : isDanger ? colors.error : variant === 'primary' ? colors.primary : colors.borderStrong;
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       onPress={onPress}
       disabled={disabled || loading}
@@ -53,9 +67,16 @@ export function Button({
         style,
       ]}
     >
-      <Text style={[styles.buttonLabel, { color: fg }]}>
-        {loading ? 'Working…' : label}
-      </Text>
+      <View style={styles.buttonInner}>
+        {icon ? (
+          <Text style={[styles.buttonIcon, { color: fg }, size === 'lg' && styles.buttonIconLg]} aria-hidden>
+            {icon}
+          </Text>
+        ) : null}
+        <Text style={[styles.buttonLabel, { color: fg }]}>
+          {loading ? 'Working…' : label}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -71,6 +92,8 @@ export function Card({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View testID={testID} style={[styles.card, style]}>
       {children}
@@ -89,8 +112,10 @@ export interface BadgeProps {
 }
 
 export function Badge({ icon, label, tone, size = 'md', testID }: BadgeProps): React.JSX.Element {
-  const bg = toneBg[tone];
-  const fg = toneColor[tone];
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
+  const bg = toneBg(colors)[tone];
+  const fg = toneColor(colors)[tone];
   return (
     <View
       testID={testID}
@@ -135,13 +160,15 @@ export function ChoiceGroup<T extends string>({
   error,
   testID,
 }: ChoiceGroupProps<T>): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.fieldGroup} testID={testID}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <View style={styles.choiceRow}>
         {options.map((option) => {
           const selected = option.value === value;
-          const toneColorValue = option.tone ? toneColor[option.tone] : colors.primary;
+          const toneColorValue = option.tone ? toneColor(colors)[option.tone] : colors.primary;
           return (
             <Pressable
               key={option.value}
@@ -153,7 +180,7 @@ export function ChoiceGroup<T extends string>({
                 styles.choice,
                 {
                   borderColor: selected ? toneColorValue : colors.borderStrong,
-                  backgroundColor: selected ? toneBg[option.tone ?? 'info'] : colors.surface,
+                  backgroundColor: selected ? toneBg(colors)[option.tone ?? 'info'] : colors.surface,
                 },
               ]}
             >
@@ -186,13 +213,21 @@ export interface TextFieldProps {
   value: string;
   onChangeText: (text: string) => void;
   onBlur?: () => void;
+  onSubmitEditing?: () => void;
   placeholder?: string;
   error?: string;
+  /** Short helper text under the label, e.g. "Printed on the machine label". */
+  helper?: string;
   multiline?: boolean;
   secure?: boolean;
+  /** Shows a red asterisk next to the label and marks the input required. */
+  required?: boolean;
   autoCapitalize?: 'none' | 'sentences' | 'words';
   keyboardType?: 'default' | 'email-address' | 'numeric';
+  returnKeyType?: 'default' | 'done' | 'go' | 'next' | 'search' | 'send';
+  autoFocus?: boolean;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
   testID?: string;
   style?: StyleProp<ViewStyle>;
 }
@@ -202,36 +237,56 @@ export function TextField({
   value,
   onChangeText,
   onBlur,
+  onSubmitEditing,
   placeholder,
   error,
+  helper,
   multiline = false,
   secure = false,
+  required = false,
   autoCapitalize = 'sentences',
   keyboardType = 'default',
+  returnKeyType,
+  autoFocus = false,
   accessibilityLabel,
+  accessibilityHint,
   testID,
   style,
 }: TextFieldProps): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={[styles.fieldGroup, style]}>
-      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldLabel}>
+        {label}
+        {required ? <Text style={styles.requiredMark}> *</Text> : null}
+      </Text>
+      {helper ? <Text style={styles.helperText}>{helper}</Text> : null}
       <TextInput
         testID={testID}
-        accessibilityLabel={accessibilityLabel ?? label}
+        accessibilityLabel={accessibilityLabel ?? (required ? `${label}, required` : label)}
+        accessibilityHint={accessibilityHint}
         style={[styles.input, multiline && styles.inputMultiline, error ? styles.inputError : null]}
         value={value}
         onChangeText={onChangeText}
         onBlur={onBlur}
+        onSubmitEditing={onSubmitEditing}
         placeholder={placeholder}
         placeholderTextColor={colors.textSubtle}
         secureTextEntry={secure}
         autoCapitalize={autoCapitalize}
         autoCorrect={!secure}
+        autoFocus={autoFocus}
         keyboardType={keyboardType}
+        returnKeyType={returnKeyType}
         multiline={multiline}
         textAlignVertical={multiline ? 'top' : 'center'}
       />
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? (
+        <Text style={styles.errorText} accessibilityLiveRegion="polite">
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -239,10 +294,14 @@ export function TextField({
 // --- Section title / key-value ------------------------------------------------------------
 
 export function SectionTitle({ children }: { children: React.ReactNode }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return <Text style={styles.sectionTitle}>{children}</Text>;
 }
 
 export function KeyValue({ label, value }: { label: string; value: React.ReactNode }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.kvRow}>
       <Text style={styles.kvLabel}>{label}</Text>
@@ -266,9 +325,11 @@ export function StatTile({
   onPress?: () => void;
   testID?: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const content = (
     <>
-      <Text style={[styles.statCount, { color: toneColor[tone] }]} testID={testID ? `${testID}-count` : undefined}>
+      <Text style={[styles.statCount, { color: toneColor(colors)[tone] }]} testID={testID ? `${testID}-count` : undefined}>
         {count === null ? '—' : String(count)}
       </Text>
       <Text style={styles.statLabel}>{label}</Text>
@@ -287,15 +348,18 @@ export function StatTile({
 // --- Chip (static label chip) -----------------------------------------------------------------
 
 export function Chip({ icon, label, tone = 'neutral' }: { icon?: string; label: string; tone?: Tone }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
-    <View style={[styles.chip, { backgroundColor: toneBg[tone], borderColor: toneColor[tone] }]}>
-      {icon ? <Text style={{ color: toneColor[tone], marginRight: 4 }} aria-hidden>{icon}</Text> : null}
-      <Text style={{ color: toneColor[tone], fontSize: typeScale.small }}>{label}</Text>
+    <View style={[styles.chip, { backgroundColor: toneBg(colors)[tone], borderColor: toneColor(colors)[tone] }]}>
+      {icon ? <Text style={{ color: toneColor(colors)[tone], marginRight: 4 }} aria-hidden>{icon}</Text> : null}
+      <Text style={{ color: toneColor(colors)[tone], fontSize: typeScale.small }}>{label}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   button: {
     minHeight: minTouchTarget,
     borderRadius: radius.md,
@@ -312,6 +376,14 @@ const styles = StyleSheet.create({
     fontSize: typeScale.subheading,
     fontWeight: '600',
   },
+  buttonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  buttonIcon: { fontSize: 16 },
+  buttonIconLg: { fontSize: 20 },
   card: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -340,6 +412,8 @@ const styles = StyleSheet.create({
   badgeLabelSm: { fontSize: typeScale.tiny },
   fieldGroup: { marginBottom: spacing.md },
   fieldLabel: { color: colors.textMuted, fontSize: typeScale.small, marginBottom: spacing.xs },
+  requiredMark: { color: colors.error, fontWeight: '700' },
+  helperText: { color: colors.textSubtle, fontSize: typeScale.tiny, marginBottom: spacing.xs, marginTop: -spacing.xs },
   input: {
     backgroundColor: colors.surfaceRaised,
     borderColor: colors.borderStrong,
@@ -403,5 +477,3 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
 });
-
-export const uiStyles = styles as unknown as Record<string, StyleProp<ViewStyle | TextStyle>>;

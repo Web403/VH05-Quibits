@@ -12,6 +12,7 @@ import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleShee
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import type { MessageView } from '@itp/shared';
 import { useAuth } from '@/auth/auth-context';
 import { useConversation, useMessages, useSendMessage } from '@/hooks/queries';
@@ -25,9 +26,12 @@ import { ragStatus, conversationStatus } from '@/lib/labels';
 import { can } from '@/lib/permissions';
 import { errorMessage } from '@/api/errors';
 import { createIncidentFromConversation } from '@/api/endpoints';
-import { colors, radius, spacing, type as typeScale } from '@/theme/tokens';
+import { radius, spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function ConversationScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
   const router = useRouter();
   const { user } = useAuth();
@@ -220,6 +224,7 @@ function CitationsModal({
   onClose: () => void;
   onOpenIncident: (incidentId: string) => void;
 }): React.JSX.Element {
+  const { colors } = useTheme();
   if (!message) return <View />;
   const citations = citationsOf(message);
   return (
@@ -241,7 +246,8 @@ function CitationsModal({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   contextRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   contextText: { color: colors.textMuted, fontSize: typeScale.small, flexShrink: 1 },

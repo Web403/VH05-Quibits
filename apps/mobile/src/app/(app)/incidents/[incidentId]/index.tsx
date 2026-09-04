@@ -12,6 +12,7 @@ import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-nati
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { useAuth } from '@/auth/auth-context';
 import { useIncident, markIncidentVisited, useQueuedWrite, type QueuedWriteResult } from '@/hooks/queries';
 import { useSyncEngine } from '@/hooks/use-sync';
@@ -26,7 +27,8 @@ import { cancelIncident } from '@/api/endpoints';
 import { errorMessage } from '@/api/errors';
 import { ISSUE_STATUS_TRANSITIONS, INCIDENT_STATUS_TRANSITIONS } from '@/lib/lifecycle';
 import { CONFIRMED_ISSUE_STATUSES, type IncidentStatus, type IssueStatus } from '@itp/shared';
-import { colors, spacing, type as typeScale } from '@/theme/tokens';
+import { spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 type Dialog =
   | { kind: 'status'; to: IncidentStatus }
@@ -37,6 +39,8 @@ type Dialog =
   | null;
 
 export default function IncidentDetailScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { incidentId } = useLocalSearchParams<{ incidentId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -324,6 +328,8 @@ function LifecycleDialog({
   queued: ReturnType<typeof useQueuedWrite>;
   onDone: () => void;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -432,7 +438,8 @@ function LifecycleDialog({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm },

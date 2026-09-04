@@ -6,6 +6,7 @@
  */
 import { Stack, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/auth/auth-context';
@@ -13,9 +14,10 @@ import { useNetwork } from '@/hooks/use-network';
 import { useSyncStatus } from '@/hooks/queries';
 import { OfflineBanner, PendingSyncBanner } from '@/components/banners';
 import { initDatabase } from '@/db/database';
-import { colors } from '@/theme/tokens';
+
 
 export default function ProtectedLayout(): React.JSX.Element {
+  const { colors } = useTheme();
   const { user } = useAuth();
   const { isOnline } = useNetwork();
   const [visible, setVisible] = useState(true);

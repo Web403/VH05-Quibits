@@ -9,6 +9,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMemo } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import type { IncidentView } from '@itp/shared';
 import { useAuth } from '@/auth/auth-context';
 import { useIncident, useIncidentActions, useIncidentTimeline } from '@/hooks/queries';
@@ -16,7 +17,8 @@ import { CachedNotice, ErrorState, LoadingState } from '@/components/states';
 import { TimelineEventRow } from '@/components/list-rows';
 import { errorMessage } from '@/api/errors';
 import { formatDateTime } from '@/lib/format';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 interface MergedEvent {
   key: string;
@@ -25,6 +27,8 @@ interface MergedEvent {
 }
 
 export default function TimelineScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { incidentId } = useLocalSearchParams<{ incidentId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -132,7 +136,8 @@ export default function TimelineScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   note: { color: colors.textSubtle, fontSize: 12, marginBottom: spacing.md },

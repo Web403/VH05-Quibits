@@ -8,6 +8,7 @@
 import { FormEvent, useState } from 'react';
 import { apiClient, ApiClientError } from '../lib/api-client';
 import { useAuth } from '../lib/auth';
+import { useTheme, type ThemePreference } from '../lib/theme';
 import { useToast } from '../lib/toast';
 import { formatDate } from '../lib/format';
 import {
@@ -24,8 +25,15 @@ import {
 import { rolePresentation } from '../lib/user-labels';
 import './page.css';
 
+const THEME_OPTIONS: { value: ThemePreference; title: string; hint: string }[] = [
+  { value: 'system', title: 'System', hint: 'Match the operating system appearance.' },
+  { value: 'light', title: 'Light', hint: 'Bright surfaces for daylight use.' },
+  { value: 'dark', title: 'Dark', hint: 'Low-glare surfaces for dark control rooms.' },
+];
+
 export function SettingsPage(): JSX.Element {
   const { user, updateUser } = useAuth();
+  const { preference, scheme, setPreference } = useTheme();
   const toast = useToast();
 
   const [fullName, setFullName] = useState(user?.fullName ?? '');
@@ -113,6 +121,36 @@ export function SettingsPage(): JSX.Element {
           />
         </Card>
       )}
+
+      <Card>
+        <div className="section-head">
+          <h2>Appearance</h2>
+          <Badge presentation={{ tone: 'info', icon: '↻', label: 'Synced to your account' }} size="sm" />
+        </div>
+        <p className="field__hint" style={{ marginBottom: 'var(--space-md)' }}>
+          Follow the operating system, or force a light or dark interface. The choice applies to
+          this device and — while you are signed in — is also stored on your profile so the mobile
+          app matches.
+        </p>
+        <div className="theme-choices" role="radiogroup" aria-label="Colour theme">
+          {THEME_OPTIONS.map(({ value, title, hint }) => (
+            <label key={value} className={`theme-choice${preference === value ? ' theme-choice--active' : ''}`}>
+              <input
+                type="radio"
+                name="theme-preference"
+                value={value}
+                checked={preference === value}
+                onChange={() => setPreference(value)}
+              />
+              <span className="theme-choice__title">{title}</span>
+              <span className="theme-choice__hint">{hint}</span>
+            </label>
+          ))}
+        </div>
+        <p className="field__hint" style={{ marginTop: 'var(--space-md)' }}>
+          Currently showing: {scheme === 'light' ? 'light' : 'dark'} theme{preference === 'system' ? ' (from your operating system)' : ''}.
+        </p>
+      </Card>
 
       <Card>
         <div className="section-head"><h2>Profile</h2></div>

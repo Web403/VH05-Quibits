@@ -33,6 +33,19 @@
   --color-neutral: #6b7484;
   --color-neutral-bg: rgba(107, 116, 132, 0.12);
 
+  /* Accent + strong tones (theme-switchable). */
+  --accent: #1f6feb;
+  --accent-hover: #388bfd;
+  --fg-danger-strong: #ff9a94;
+  --content-link: #a5cdfd;
+  --color-warn-dark: #f0c674;
+  --color-info-dark: #58a6ff;
+  --fg-ok-strong: #6fe084;
+  --fg-info-strong: #93c5fd;
+  --fg-warn-strong: #f0c674;
+  /* Slightly-lighter panel fills used by the incident detail pages. */
+  --color-surface-alt: #20242e;
+
   --radius: 8px;
   --radius-sm: 5px;
   --space-xs: 4px;
@@ -147,4 +160,47 @@ button:disabled {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ── Light theme ────────────────────────────────────────────────────────────
+   Applied by the theme provider via <html data-theme="light">. Only palette
+   tokens flip; spacing, radius and typography are shared. Tones in ui.css
+   alias --color-*, so they follow automatically. */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg: #f2f4f8;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f0f3f8;
+  --color-border: #d6dce6;
+  --color-border-strong: #b5bfd0;
+
+  --color-text: #121a26;
+  --color-text-muted: #4d5a6e;
+  --color-text-subtle: #7c8898;
+
+  --color-ok: #157347;
+  --color-ok-bg: rgba(21, 115, 71, 0.1);
+  --color-warn: #8a5b00;
+  --color-warn-bg: rgba(138, 91, 0, 0.12);
+  --color-error: #b3261e;
+  --color-error-bg: rgba(179, 38, 30, 0.1);
+  --color-info: #1d4fd7;
+  --color-info-bg: rgba(29, 79, 215, 0.1);
+  --color-neutral: #5b6675;
+  --color-neutral-bg: rgba(91, 102, 117, 0.12);
+
+  --accent: #0b5fff;
+  --accent-hover: #2f66e8;
+  --fg-danger-strong: #b3261e;
+  --content-link: #084bd6;
+  --color-warn-dark: #7a4a00;
+  --color-info-dark: #075985;
+  --fg-ok-strong: #157347;
+  --fg-info-strong: #1d4fd7;
+  --fg-warn-strong: #8a5b00;
+  --color-surface-alt: #f3f4f6;
+
+  /* Softer elevation on light surfaces (ui.css consumes this token). */
+  --shadow-raised: 0 8px 24px rgba(20, 29, 43, 0.14);
 }

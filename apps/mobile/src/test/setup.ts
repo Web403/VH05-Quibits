@@ -73,15 +73,61 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true }),
   usePathname: jest.fn(() => '/'),
   useLocalSearchParams: jest.fn(() => ({})),
+  useNavigation: jest.fn(() => ({ addListener: jest.fn(() => () => {}), dispatch: jest.fn() })),
+  useFocusEffect: jest.fn(() => {}),
   Link: ({ children }: { children: React.ReactNode }) => children,
   Stack: { Screen: () => null },
   Tabs: { Screen: () => null },
   Redirect: () => null,
-  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true },
 }));
+
+// --- expo-camera: fake permission hook + a CameraView double that captures the
+// scan handler so tests can fire barcodes without any device. ---------------
+const mockCameraState: {
+  permission: { granted: boolean; canAskAgain: boolean; status: string } | null;
+  requestPermission: jest.Mock;
+  lastScanHandler: ((result: { type: string; data: string }) => void) | undefined;
+} = {
+  permission: { granted: true, canAskAgain: true, status: 'granted' },
+  requestPermission: jest.fn(),
+  lastScanHandler: undefined,
+};
+
+jest.mock('expo-camera', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const React = require('react');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { View } = require('react-native');
+  return {
+    CameraView: (props: { onBarcodeScanned?: (result: { type: string; data: string }) => void; children?: React.ReactNode }) => {
+      mockCameraState.lastScanHandler = props.onBarcodeScanned;
+      return React.createElement(View, { testID: 'camera-view' }, props.children ?? null);
+    },
+    useCameraPermissions: () => [mockCameraState.permission, mockCameraState.requestPermission],
+    __mockCameraState: mockCameraState,
+  };
+});
+
+jest.mock('expo-haptics', () => ({
+  NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  notificationAsync: jest.fn(async () => {}),
+  impactAsync: jest.fn(async () => {}),
+}));
+
+/** Test helper: steer the fake camera for one test, then reset in afterEach. */
+export function setMockCameraPermission(permission: { granted: boolean; canAskAgain: boolean; status: string } | null): void {
+  mockCameraState.permission = permission;
+}
+
+/** Test helper: fire a barcode at the mounted CameraView double. */
+export function simulateScan(data: string): void {
+  mockCameraState.lastScanHandler?.({ type: 'qr', data });
+}
 
 jest.mock('expo-router/entry', () => ({
   SplashScreen: { preventAutoHideAsync: jest.fn(), hideAsync: jest.fn() },

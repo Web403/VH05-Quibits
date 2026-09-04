@@ -1,12 +1,14 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 /**
  * Entry route: decide where the user lands based on session state.
  */
 import { Redirect } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '@/auth/auth-context';
-import { colors } from '@/theme/tokens';
+
 
 export default function Index(): React.JSX.Element {
+  const { colors } = useTheme();
   const { status } = useAuth();
   if (status === 'loading') {
     return (

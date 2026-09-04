@@ -7,27 +7,31 @@
  * historical citations deep-link to the referenced incident.
  */
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Citation, EvidenceLane } from '@/lib/sources';
 import { LANE_CAPTION, LANE_CHIP } from '@/lib/sources';
 import { getManualChunk } from '@/api/endpoints';
 import { errorMessage } from '@/api/errors';
-import { colors, radius, spacing, toneBg, toneColor, type as typeScale } from '@/theme/tokens';
+import { radius, spacing, toneBg, toneColor, type as typeScale, type Tone } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 import { Button } from './ui';
 import { LoadingState, InlineBanner } from './states';
 import { formatDateTime, pagesLabel } from '@/lib/format';
 
-const LANE_TONE: Record<EvidenceLane, keyof typeof toneColor> = {
+const LANE_TONE: Record<EvidenceLane, Tone> = {
   manual: 'ok',
   historical: 'warn',
   maintenance: 'info',
 };
 
 export function LaneChip({ lane }: { lane: EvidenceLane }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const tone = LANE_TONE[lane];
   return (
-    <View style={[styles.laneChip, { backgroundColor: toneBg[tone], borderColor: toneColor[tone] }]}>
-      <Text style={{ color: toneColor[tone], fontSize: typeScale.tiny, fontWeight: '700' }}>{LANE_CHIP[lane]}</Text>
+    <View style={[styles.laneChip, { backgroundColor: toneBg(colors)[tone], borderColor: toneColor(colors)[tone] }]}>
+      <Text style={{ color: toneColor(colors)[tone], fontSize: typeScale.tiny, fontWeight: '700' }}>{LANE_CHIP[lane]}</Text>
     </View>
   );
 }
@@ -39,13 +43,15 @@ export function CitationCard({
   citation: Citation;
   onOpenIncident?: (incidentId: string) => void;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [previewVisible, setPreviewVisible] = useState(false);
   const canOpenChunk = citation.lane === 'manual' && Boolean(citation.manualId && citation.chunkId);
   const canOpenIncident = citation.lane === 'historical' && Boolean(citation.incidentId && onOpenIncident);
   const pages = pagesLabel(citation.pageStart, citation.pageEnd);
 
   return (
-    <View style={[styles.card, { borderColor: toneColor[LANE_TONE[citation.lane]] }]} accessibilityLabel={`${LANE_CHIP[citation.lane]} citation: ${citation.title}`}>
+    <View style={[styles.card, { borderColor: toneColor(colors)[LANE_TONE[citation.lane]] }]} accessibilityLabel={`${LANE_CHIP[citation.lane]} citation: ${citation.title}`}>
       <View style={styles.header}>
         <LaneChip lane={citation.lane} />
         {pages ? <Text style={styles.pages}>{pages}</Text> : null}
@@ -95,6 +101,8 @@ function ChunkPreviewModal({
   title: string;
   pages: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [state, setState] = useState<{ loading: boolean; error: string | null; text: string | null; section: string | null }>({
     loading: false,
     error: null,
@@ -148,7 +156,8 @@ function ChunkPreviewModal({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   card: {
     borderWidth: 1,
     borderLeftWidth: 4,

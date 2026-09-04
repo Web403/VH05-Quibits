@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { ErrorBoundary } from './components/error-boundary';
 import { AuthProvider } from './lib/auth';
+import { ThemeProvider } from './lib/theme';
 import { ToastProvider } from './lib/toast';
 import './styles/global.css';
 
@@ -23,9 +24,11 @@ createRoot(container).render(
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <AuthProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

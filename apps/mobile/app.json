@@ -6,11 +6,11 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "itp-mobile",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Not used in this phase. The app does not access the camera."
+        "NSCameraUsageDescription": "The camera is used only to scan machine QR codes so you can open the right machine. Nothing is recorded or stored."
       }
     },
     "android": {
@@ -33,7 +33,13 @@
         }
       ],
       "expo-secure-store",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "The camera is used only to scan machine QR codes so you can open the right machine. Nothing is recorded or stored."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

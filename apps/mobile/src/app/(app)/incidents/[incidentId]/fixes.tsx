@@ -9,6 +9,7 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { useAuth } from '@/auth/auth-context';
 import { useIncident, useQueuedWrite } from '@/hooks/queries';
 import { useSyncEngine } from '@/hooks/use-sync';
@@ -18,13 +19,16 @@ import { CachedNotice, ErrorState, InlineBanner, LoadingState } from '@/componen
 import { FixCard } from '@/components/list-rows';
 import { can, canAttempt } from '@/lib/permissions';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 import { fixRecordSchema } from '@/validation/schemas';
 
 type FixKind = 'temporary' | 'permanent';
 type Mode = { kind: FixKind; action: 'record' | 'confirm' } | null;
 
 export default function FixesScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { incidentId } = useLocalSearchParams<{ incidentId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -203,7 +207,8 @@ export default function FixesScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   labelLine: { color: colors.textMuted, fontSize: 13, marginBottom: 4 },

@@ -1,13 +1,15 @@
 /**
  * Home - the field dashboard.
  *
- * Prioritizes the technician's own work: assigned queue counts, recent
- * incidents, recently opened machines, pending offline changes and quick
- * actions. No analytics, no admin dashboards.
+ * Field actions come first (scan a machine, search, report, your queue,
+ * assistant), then the technician's own work: assigned counts, recent
+ * incidents, recently opened machines and pending offline changes.
+ * No analytics, no admin dashboards.
  */
 import { ScrollView, StyleSheet, View, Text, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/auth/auth-context';
 import { useHomeOverview, useRecents, useSyncStatus } from '@/hooks/queries';
@@ -16,18 +18,18 @@ import { useSyncEngine } from '@/hooks/use-sync';
 import { Button, Card, SectionTitle, StatTile, Badge } from '@/components/ui';
 import { PressableRow, EmptyState, ErrorState, LoadingState, SkeletonList } from '@/components/states';
 import { IncidentRow } from '@/components/list-rows';
+import { HOME_ACTIONS } from '@/lib/home-actions';
 import { relativeTime } from '@/lib/format';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing, type as typeScale } from '@/theme/tokens';
+import { spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
-const QUICK_ACTIONS = [
-  { label: 'Ask Assistant', icon: '✦', route: '/(app)/(tabs)/assistant' },
-  { label: 'Create Incident', icon: '★', route: '/(app)/incidents/create' },
-  { label: 'Search Machines', icon: '⚙', route: '/(app)/(tabs)/machines' },
-  { label: 'My Work', icon: '☑', route: '/(app)/(tabs)/work' },
-] as const;
+const PRIMARY_ACTION = HOME_ACTIONS.find((action) => action.primary)!;
+const SECONDARY_ACTIONS = HOME_ACTIONS.filter((action) => !action.primary);
 
 export default function HomeScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { user } = useAuth();
   const { isOnline } = useNetwork();
   const userId = user?.id ?? '';
@@ -67,6 +69,33 @@ export default function HomeScreen(): React.JSX.Element {
           {!isOnline ? <Badge icon="⊘" label="Offline" tone="warn" /> : null}
         </View>
 
+        {/* The single most common field action, unmissable and one-handed. */}
+        <Button
+          label={PRIMARY_ACTION.label}
+          icon={PRIMARY_ACTION.icon}
+          size="lg"
+          onPress={() => router.push(PRIMARY_ACTION.route as never)}
+          accessibilityHint={PRIMARY_ACTION.accessibilityHint}
+          testID={PRIMARY_ACTION.testID}
+          style={styles.scanButton}
+        />
+        <Text style={styles.scanHint}>Point the camera at the QR code on the machine.</Text>
+
+        <View style={styles.quickGrid}>
+          {SECONDARY_ACTIONS.map((action) => (
+            <Button
+              key={action.label}
+              label={action.label}
+              icon={action.icon}
+              variant="secondary"
+              onPress={() => router.push(action.route as never)}
+              accessibilityHint={action.accessibilityHint}
+              testID={action.testID}
+              style={styles.quickButton}
+            />
+          ))}
+        </View>
+
         <SectionTitle>Your work</SectionTitle>
         {overview.isInitialLoading ? (
           <SkeletonList rows={2} />
@@ -87,19 +116,6 @@ export default function HomeScreen(): React.JSX.Element {
             <StatTile label="Unresolved issues" count={data?.unresolvedIssues ?? null} tone="error" onPress={() => router.push('/(app)/(tabs)/work')} />
           </View>
         ) : null}
-
-        <SectionTitle>Quick actions</SectionTitle>
-        <View style={styles.quickGrid}>
-          {QUICK_ACTIONS.map((action) => (
-            <Button
-              key={action.label}
-              label={`${action.icon}  ${action.label}`}
-              variant="secondary"
-              onPress={() => router.push(action.route)}
-              style={styles.quickButton}
-            />
-          ))}
-        </View>
 
         <SectionTitle>Pending offline changes</SectionTitle>
         <Card>
@@ -155,7 +171,8 @@ export default function HomeScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
@@ -164,6 +181,8 @@ const styles = StyleSheet.create({
   statGrid: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm },
   quickButton: { flexGrow: 1, minWidth: '46%' },
+  scanButton: { marginTop: spacing.xs, minHeight: 64 },
+  scanHint: { color: colors.textSubtle, fontSize: typeScale.tiny, textAlign: 'center', marginTop: spacing.xs, marginBottom: spacing.md },
   syncLine: { color: colors.text, fontSize: typeScale.body, fontWeight: '600' },
   syncTime: { color: colors.textMuted, fontSize: typeScale.small, marginTop: 2, marginBottom: spacing.sm },
   syncActions: { flexDirection: 'row', gap: spacing.sm },

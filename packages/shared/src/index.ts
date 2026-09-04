@@ -541,6 +541,17 @@ export const PAGINATION_MAX_LIMIT = 100;
 // Auth wire shapes (Phase 2)
 // ---------------------------------------------------------------------------
 
+/** Colour-scheme choice stored on the user profile (web + mobile). */
+export type ThemeModePreference = 'light' | 'dark' | 'system';
+
+/** Subscription-free per-user preferences shared by the web and mobile clients. */
+export interface UserPreferences {
+  locale?: string;
+  /** Client-side colour scheme. `system` follows the OS appearance. */
+  theme?: ThemeModePreference;
+  timezone?: string;
+}
+
 /** The safe user projection. `password_hash` can never appear here. */
 export interface PublicUser {
   id: string;
@@ -551,6 +562,7 @@ export interface PublicUser {
   isActive: boolean;
   mustChangePassword: boolean;
   lastLoginAt: string | null;
+  preferences?: UserPreferences | null;
   createdAt: string;
   updatedAt: string;
 }

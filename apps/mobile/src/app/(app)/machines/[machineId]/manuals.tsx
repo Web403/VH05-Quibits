@@ -1,3 +1,4 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 /**
  * Manuals for a machine: machine-scoped + model-scoped, merged.
  * Processing status is shown honestly (only `completed` manuals are
@@ -13,18 +14,30 @@ import { Card, SectionTitle } from '@/components/ui';
 import { CachedNotice, EmptyState, ErrorState, LoadingState } from '@/components/states';
 import { ManualRow } from '@/components/list-rows';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function MachineManualsScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { machineId } = useLocalSearchParams<{ machineId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
   const machineQuery = useMachine(userId, machineId);
   const manuals = useManualsForMachine(userId, machineQuery.data?.data);
 
+  const machineLabel = machineQuery.data?.data.displayName ?? machineQuery.data?.data.assetTag ?? '';
+
   return (
     <SafeAreaView style={styles.screen} edges={['bottom']}>
-      <Stack.Screen options={{ headerShown: true, title: 'Manuals', headerStyle: { backgroundColor: colors.surface }, headerTintColor: colors.text }} />
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: machineLabel ? `${machineLabel} — manuals` : 'Manuals',
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.text,
+        }}
+      />
       <ScrollView contentContainerStyle={styles.content}>
         {machineQuery.isInitialLoading ? (
           <LoadingState />
@@ -65,7 +78,8 @@ export default function MachineManualsScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   note: { color: colors.textMuted, fontSize: 13, lineHeight: 19 },

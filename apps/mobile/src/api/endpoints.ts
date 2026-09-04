@@ -12,11 +12,13 @@ import type {
   MessageView,
   PublicUser,
   SimilarIncidentView,
+  UserPreferences,
 } from '@itp/shared';
 import { get, pageOf, patch, post, del, type Page } from './client';
 import type {
   ConversationListItem,
   MachineModelView,
+  MachineQrSummary,
   MachineView,
   ManualView,
   PostMessageResponse,
@@ -41,6 +43,19 @@ export const listMachines = (query: ListMachinesQuery = {}): Promise<Page<Machin
 
 export const getMachine = (id: string): Promise<MachineView> =>
   get<{ machine: MachineView }>(`/machines/${id}`).then((r) => r.machine);
+
+/**
+ * Resolve a scanned (or manually typed) machine code.
+ *
+ * The QR value identifies the machine; the backend authorizes the caller.
+ * Errors bubble up as ApiError: 400 = not a machine code, 404 = unknown or
+ * not visible to this user (same response on purpose), 403 = no machine.read.
+ */
+export const resolveMachineQr = (qrValue: string): Promise<MachineQrSummary> =>
+  get<{ machine: MachineQrSummary }>(`/machines/resolve-qr/${encodeURIComponent(qrValue)}`, {
+    // No silent re-resolution of a scan: the technician controls retries.
+    autoRetry: false,
+  }).then((r) => r.machine);
 
 export const machineTimeline = (
   id: string,
@@ -209,3 +224,7 @@ export const createIncidentFromConversation = (conversationId: string): Promise<
 // --- Users -----------------------------------------------------------------------------
 
 export const whoAmI = (): Promise<PublicUser> => get<{ user: PublicUser }>('/users/me').then((r) => r.user);
+
+/** Persist profile preferences (colour theme, locale, timezone). */
+export const updateMyPreferences = (preferences: UserPreferences): Promise<PublicUser> =>
+  patch<{ user: PublicUser }>('/users/me', { preferences }).then((r) => r.user);

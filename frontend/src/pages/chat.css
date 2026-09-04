@@ -307,15 +307,15 @@
 }
 
 .lane-chip--incident {
-  background: var(--color-warn-bg, #fff4e0);
+  background: var(--color-warn-bg);
   border-color: var(--color-warn);
-  color: var(--color-warn-dark, #7a4a00);
+  color: var(--color-warn-dark);
 }
 
 .lane-chip--maintenance {
-  background: var(--color-info-bg, #e0f2fe);
-  border-color: var(--color-info, #0284c7);
-  color: var(--color-info-dark, #075985);
+  background: var(--color-info-bg);
+  border-color: var(--color-info);
+  color: var(--color-info-dark);
 }
 
 .citation {
@@ -335,7 +335,7 @@
 }
 
 .citation--maintenance {
-  border-left: 3px solid var(--color-info, #0284c7);
+  border-left: 3px solid var(--color-info);
   padding-left: var(--space-sm);
 }
 
@@ -348,16 +348,16 @@
 .source-caption--incident {
   border-left: 3px solid var(--color-warn);
   padding: var(--space-sm);
-  color: var(--color-warn-dark, #7a4a00);
-  background: var(--color-warn-bg, #fff4e0);
+  color: var(--color-warn-dark);
+  background: var(--color-warn-bg);
   font-style: normal;
 }
 
 .source-caption--maintenance {
-  border-left: 3px solid var(--color-info, #0284c7);
+  border-left: 3px solid var(--color-info);
   padding: var(--space-sm);
-  color: var(--color-info-dark, #075985);
-  background: var(--color-info-bg, #e0f2fe);
+  color: var(--color-info-dark);
+  background: var(--color-info-bg);
   font-style: normal;
 }
 

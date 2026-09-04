@@ -98,7 +98,7 @@ describe('ManualUploadPage validation', () => {
     fireEvent.click(screen.getByRole('button', { name: /upload & process/i }));
 
     await waitFor(() => expect(uploadManual).toHaveBeenCalledOnce());
-    const form = uploadManual.mock.calls[0][0];
+    const form = uploadManual.mock.calls[0]?.[0] as FormData;
     expect(form.get('scope')).toBe('machine');
     expect(form.get('machineId')).toBe('machine1');
     expect(form.get('machineModelId')).toBeNull();

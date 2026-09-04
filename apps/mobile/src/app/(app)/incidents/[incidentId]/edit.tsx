@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import type { IncidentView } from '@itp/shared';
 import { useAuth } from '@/auth/auth-context';
 import { useIncident, useQueuedWrite } from '@/hooks/queries';
@@ -21,9 +22,12 @@ import { InlineBanner, LoadingState, ErrorState } from '@/components/states';
 import { PRIORITIES, SEVERITIES } from '@itp/shared';
 import { severity as severityPresentation, priority as priorityPresentation } from '@/lib/labels';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function EditIncidentScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { incidentId } = useLocalSearchParams<{ incidentId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -217,7 +221,8 @@ export default function EditIncidentScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   note: { color: colors.textMuted, fontSize: 13 },

@@ -6,12 +6,13 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useTheme, useThemedStyles, type ThemePreference } from '@/theme/theme';
 import { useAuth } from '@/auth/auth-context';
 import { useSyncStatus } from '@/hooks/queries';
 import { useSyncEngine } from '@/hooks/use-sync';
 import { useNetwork } from '@/hooks/use-network';
 import { capabilitiesOf } from '@/lib/permissions';
-import { Button, Card, Chip, KeyValue, SectionTitle } from '@/components/ui';
+import { Button, Card, Chip, ChoiceGroup, KeyValue, SectionTitle } from '@/components/ui';
 import { ConfirmDialog } from '@/components/banners';
 import { OutboxOpRow, type OutboxOpView } from '@/components/list-rows';
 import { EmptyState } from '@/components/states';
@@ -21,9 +22,12 @@ import { cacheClear } from '@/db/cache';
 import { env } from '@/config/env';
 import { formatDateTime, relativeTime } from '@/lib/format';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing, type as typeScale } from '@/theme/tokens';
+import { spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function ProfileScreen(): React.JSX.Element {
+  const { colors, preference, setPreference } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { user, logout } = useAuth();
   const { isOnline } = useNetwork();
   const userId = user?.id ?? '';
@@ -79,6 +83,25 @@ export default function ProfileScreen(): React.JSX.Element {
               You must change your password (web app or administrator). This banner stays until then.
             </Text>
           ) : null}
+        </Card>
+
+        <SectionTitle>Appearance</SectionTitle>
+        <Card>
+          <Text style={styles.body}>
+            Follow the device setting, or force a light or dark interface. The choice is saved to
+            your profile, so the web app and your other devices show the same theme.
+          </Text>
+          <ChoiceGroup<ThemePreference>
+            label="Colour theme"
+            options={[
+              { value: 'system', label: 'System' },
+              { value: 'light', label: 'Light' },
+              { value: 'dark', label: 'Dark' },
+            ]}
+            value={preference}
+            onChange={setPreference}
+            testID="theme-choice"
+          />
         </Card>
 
         <SectionTitle>Permissions</SectionTitle>
@@ -192,7 +215,8 @@ export default function ProfileScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   body: { color: colors.textMuted, fontSize: typeScale.small, lineHeight: 20 },

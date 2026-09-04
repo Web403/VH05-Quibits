@@ -28,6 +28,7 @@ import {
 } from '../../common/validation.js';
 import * as audit from '../audit/audit.service.js';
 import { requireLiveModel } from '../machine-models/machine-models.service.js';
+import { resolveActorOrg } from '../organizations/organizations.service.js';
 
 export const SORTABLE = [
   'created_at',
@@ -365,4 +366,122 @@ export async function requireLiveMachine(db: Db, id: ObjectId): Promise<MachineD
     ]);
   }
   return doc;
+}
+
+// --- Machine QR resolution -----------------------------------------------------
+//
+// The QR value is an identifier, never proof of authorization. Machine QR
+// codes carry exactly `machine:<asset-tag>` - the immutable, shop-floor-known,
+// unique identifier. No database ids, no organization data, no secrets.
+//
+// Resolution rules:
+//  - Malformed values are rejected with a 400 without touching the database.
+//  - Unknown machines and foreign-organization machines BOTH return the same
+//    404, so the endpoint cannot be used to probe whether a machine exists.
+//  - The caller needs the `machine.read` capability (enforced on the route),
+//    and the lookup uses the case-insensitive unique index on asset_tag.
+//  - Successful resolutions are audit-logged.
+
+/** Asset tags: letters/digits/dot/dash/underscore/slash, 1-50 chars (mirrors assetTagSchema). */
+const ASSET_TAG_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._\-/]{0,49}$/;
+
+export const MACHINE_QR_PREFIX = 'machine:';
+
+export type QrParseResult = { ok: true; assetTag: string } | { ok: false };
+
+/**
+ * Parse a scanned (or manually typed) machine QR value into an asset tag.
+ *
+ * Accepted forms: the canonical `machine:<asset-tag>` payload and a bare
+ * asset tag (damaged labels / manual entry resolve through the same flow).
+ * Anything else - URLs, JSON, documents, empty payloads - is not a machine
+ * reference, whatever it encodes.
+ */
+export function parseMachineQrValue(raw: string): QrParseResult {
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed.length > 100) return { ok: false };
+  const candidate = trimmed.toLowerCase().startsWith(MACHINE_QR_PREFIX)
+    ? trimmed.slice(MACHINE_QR_PREFIX.length)
+    : trimmed;
+  const assetTag = candidate.trim().toUpperCase();
+  if (!ASSET_TAG_PATTERN.test(assetTag)) return { ok: false };
+  return { ok: true, assetTag };
+}
+
+/** Safe public summary returned by QR resolution - no notes, no audit data. */
+export interface MachineQrSummary {
+  id: string;
+  name: string;
+  machineCode: string;
+  serialNumber: string | null;
+  machineModelId: string;
+  machineModelName: string | null;
+  location: Record<string, unknown> | null;
+  status: MachineStatus;
+  openIncidentCount: number;
+}
+
+export function toQrSummary(doc: MachineDoc): MachineQrSummary {
+  return {
+    id: doc._id.toHexString(),
+    name: doc.display_name ?? doc.asset_tag,
+    machineCode: doc.asset_tag,
+    serialNumber: doc.serial_number ?? null,
+    machineModelId: doc.machine_model_id.toHexString(),
+    machineModelName: doc.model_snapshot
+      ? `${doc.model_snapshot.manufacturer} ${doc.model_snapshot.model_name}`
+      : null,
+    location: (doc.location as Record<string, unknown> | null) ?? null,
+    status: doc.status,
+    openIncidentCount: doc.open_incident_count ?? 0,
+  };
+}
+
+/**
+ * Resolve a QR value to one authorized machine.
+ *
+ * Organization identity comes from the authenticated user's live record, never
+ * from the request. A machine outside the caller's organization is
+ * indistinguishable from one that does not exist.
+ */
+export async function resolveQr(
+  db: Db,
+  rawValue: string,
+  actor: Actor,
+  requestId?: string,
+): Promise<MachineQrSummary> {
+  const parsed = parseMachineQrValue(rawValue);
+  if (!parsed.ok) {
+    throw ApiError.validation('This QR code is not a valid machine code.', [
+      { field: 'qrValue', issue: 'Expected machine:<asset-tag> or an asset tag.' },
+    ]);
+  }
+
+  const doc = await collections
+    .machines(db)
+    .findOne(liveFilter({ asset_tag: parsed.assetTag }), {
+      collation: { locale: 'en', strength: 2 },
+    });
+
+  if (!doc) throw ApiError.notFound('No machine matches this code.');
+
+  // Organization isolation (the deployment is single-tenant today; machines
+  // without organization_id belong to the default organization).
+  if (doc.organization_id) {
+    const org = await resolveActorOrg(db, actor.id, actor.username, actor.role);
+    if (!doc.organization_id.equals(org.orgId)) {
+      throw ApiError.notFound('No machine matches this code.');
+    }
+  }
+
+  await audit.record(db, {
+    action: audit.AUDIT_ACTIONS.machineQrResolved,
+    actor,
+    entityType: 'machine',
+    entityId: doc._id,
+    requestId: requestId ?? null,
+    metadata: { asset_tag: doc.asset_tag },
+  });
+
+  return toQrSummary(doc);
 }

@@ -1,3 +1,4 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 /**
  * Offline / sync banners and the confirmation dialog.
  *
@@ -7,9 +8,12 @@
  */
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from './ui';
-import { colors, radius, spacing, type as typeScale } from '@/theme/tokens';
+import { radius, spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export function OfflineBanner({ visible }: { visible: boolean }): React.JSX.Element | null {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   if (!visible) return null;
   return (
     <View style={[styles.banner, { borderColor: colors.warn }]} accessibilityLabel="You are offline">
@@ -32,6 +36,8 @@ export function PendingSyncBanner({
   review: number;
   onPress: () => void;
 }): React.JSX.Element | null {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   if (pending <= 0 && review <= 0) return null;
   const tone = review > 0 ? colors.error : colors.info;
   return (
@@ -80,6 +86,8 @@ export function ConfirmDialog({
   children,
   testID,
 }: ConfirmDialogProps): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
@@ -104,7 +112,8 @@ export function ConfirmDialog({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   banner: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -36,6 +36,25 @@ export interface MachineView {
   updatedAt: string;
 }
 
+/**
+ * Safe machine summary returned by GET /machines/resolve-qr/:qrValue.
+ * Mirrors MachineQrSummary in backend/src/modules/machines/machines.service.ts -
+ * intentionally NOT the full MachineView (no notes, no audit fields).
+ */
+export interface MachineQrSummary {
+  id: string;
+  /** Display name, falling back to the asset tag. */
+  name: string;
+  /** The immutable asset tag - the "machine code" on the label. */
+  machineCode: string;
+  serialNumber: string | null;
+  machineModelId: string;
+  machineModelName: string | null;
+  location: { site?: string; area?: string; line?: string; position?: string } | null;
+  status: MachineStatus;
+  openIncidentCount: number;
+}
+
 export interface MachineModelView {
   id: string;
   manufacturer: string;

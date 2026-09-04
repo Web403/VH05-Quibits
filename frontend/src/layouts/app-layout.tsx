@@ -12,6 +12,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import type { Capability } from '@itp/shared';
 import { useAuth } from '../lib/auth';
 import { roleLabel } from '../lib/permissions';
+import { useTheme, type ThemePreference } from '../lib/theme';
 import { DropdownMenu } from '../components/ui';
 import './app-layout.css';
 
@@ -59,8 +60,18 @@ function navClass({ isActive }: { isActive: boolean }): string {
   return `app-nav__link ${isActive ? 'app-nav__link--active' : ''}`;
 }
 
+const THEME_CYCLE: Record<ThemePreference, ThemePreference> = {
+  light: 'dark',
+  dark: 'system',
+  system: 'light',
+};
+const THEME_GLYPH: Record<ThemePreference, string> = { light: '☀', dark: '☾', system: '◐' };
+const THEME_LABEL: Record<ThemePreference, string> = { light: 'Light', dark: 'Dark', system: 'System' };
+
 export function AppLayout(): JSX.Element {
   const { user, logout, can } = useAuth();
+  const { preference, setPreference } = useTheme();
+  const nextTheme = THEME_CYCLE[preference];
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -162,6 +173,16 @@ export function AppLayout(): JSX.Element {
               <span className="app-topbar__homelink">Industrial Troubleshooting Platform</span>
             )}
           </div>
+
+          <button
+            type="button"
+            className="app-topbar__theme"
+            aria-label={`Colour theme: ${THEME_LABEL[preference]}. Switch to ${THEME_LABEL[nextTheme]}.`}
+            title={`Theme: ${THEME_LABEL[preference]} — switch to ${THEME_LABEL[nextTheme]}`}
+            onClick={() => setPreference(nextTheme)}
+          >
+            <span aria-hidden="true">{THEME_GLYPH[preference]}</span>
+          </button>
 
           <div className="app-topbar__user">
             {user ? (

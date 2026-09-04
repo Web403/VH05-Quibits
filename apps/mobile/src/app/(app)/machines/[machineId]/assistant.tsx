@@ -9,6 +9,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/auth/auth-context';
 import { useMachine } from '@/hooks/queries';
@@ -17,9 +18,12 @@ import { createConversation, listConversations } from '@/api/endpoints';
 import { errorMessage } from '@/api/errors';
 import { Button, Card } from '@/components/ui';
 import { ErrorState, InlineBanner } from '@/components/states';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function MachineAssistantScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { machineId } = useLocalSearchParams<{ machineId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -90,7 +94,8 @@ export default function MachineAssistantScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   body: { padding: spacing.md },
   loading: { alignItems: 'center', marginTop: spacing.xl, gap: spacing.md },

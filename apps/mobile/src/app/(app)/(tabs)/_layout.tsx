@@ -1,10 +1,12 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 /**
  * Main tabs: Home · My Work · Machines · Assistant · Profile.
  * Text-glyph icons (matching the web's "never colour alone" convention).
  */
 import { Tabs } from 'expo-router';
 import { Text, StyleSheet } from 'react-native';
-import { colors, type as typeScale } from '@/theme/tokens';
+import { type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 const ICONS: Record<string, string> = {
   home: '⌂',
@@ -15,6 +17,8 @@ const ICONS: Record<string, string> = {
 };
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <Text style={[styles.icon, { color: focused ? colors.primary : colors.textMuted }]} aria-hidden>
       {ICONS[name] ?? '·'}
@@ -23,6 +27,8 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }): React.J
 }
 
 export default function TabsLayout(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <Tabs
       screenOptions={{
@@ -63,7 +69,8 @@ export default function TabsLayout(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   icon: { fontSize: 20, lineHeight: 24 },
   label: { fontSize: typeScale.tiny },
 });

@@ -1,8 +1,9 @@
 # FRONTEND_DESIGN_SYSTEM.md
 
 A single, standardized design system for the operations workspace. The
-aesthetic is **dark, high-contrast, and dense**: the users are technicians on
-a shop floor, often on a washed-out tablet under bright light.
+aesthetic is **dark-first, high-contrast, and dense**: the users are
+technicians on a shop floor, often on a washed-out tablet under bright light.
+A first-class light theme serves daylight use — see THEME_MODES.md.
 
 ## Tokens (`styles/global.css`)
 
@@ -14,6 +15,23 @@ a shop floor, often on a washed-out tablet under bright light.
 - Radius: `--radius` (8px), `--radius-sm` (5px).
 - Spacing scale: `--space-xs/sm/md/lg/xl` (4/8/16/24/32).
 - Fonts: system sans for UI, monospace for codes/IDs/error codes.
+
+## Colour schemes (light / dark / system)
+
+Components reference semantic tokens only — never hex. The palette flips via
+`<html data-theme='light'>` applied by `lib/theme.tsx` (ThemeProvider in
+`main.tsx`); `:root` keeps dark values, `:root[data-theme='light']` overrides
+them (with `color-scheme`). New component CSS must use `var(--color-*)`,
+`var(--accent*)`, `var(--banner-*)`, `var(--fg-*-strong)`, `var(--content-link)`,
+`var(--gradient-progress)` — styling a component with a bare hex breaks the
+light theme and will be rejected in review.
+
+- Toggle: top-bar button cycles light → dark → system (announcement includes
+  current and next state); Settings → Appearance offers the same choice as
+  radio cards.
+- Persistence: `localStorage['itp.theme']` per device + `users/me.preferences`
+  on the profile (cross-device, shared with the mobile app). Details and the
+  merge-on-PATCH rule: THEME_MODES.md.
 
 ## Status is never colour-only
 

@@ -48,9 +48,24 @@ export function toPublicUser(doc: UserDoc): PublicUser {
     isActive: doc.is_active,
     mustChangePassword: doc.must_change_password,
     lastLoginAt: doc.last_login_at ? doc.last_login_at.toISOString() : null,
+    preferences: toPublicPreferences(doc.preferences),
     createdAt: doc.created_at.toISOString(),
     updatedAt: doc.updated_at.toISOString(),
   };
+}
+
+/**
+ * Project stored preferences, keeping only the contract-shape keys. The theme
+ * value is validated against the shared enum so clients never see junk.
+ */
+function toPublicPreferences(doc: UserDoc['preferences']): PublicUser['preferences'] {
+  if (!doc) return null;
+  const theme = doc.theme === 'light' || doc.theme === 'dark' || doc.theme === 'system' ? doc.theme : undefined;
+  const out: NonNullable<PublicUser['preferences']> = {};
+  if (doc.locale) out.locale = doc.locale;
+  if (theme) out.theme = theme;
+  if (doc.timezone) out.timezone = doc.timezone;
+  return Object.keys(out).length > 0 ? out : null;
 }
 
 export interface RegisterInput {

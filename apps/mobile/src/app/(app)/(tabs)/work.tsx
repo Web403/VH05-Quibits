@@ -8,6 +8,7 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/auth/auth-context';
 import { useIncidents, type IncidentFilters } from '@/hooks/queries';
@@ -16,7 +17,8 @@ import { Button, ChoiceGroup, TextField } from '@/components/ui';
 import { EmptyState, ErrorState, PressableRow, SkeletonList } from '@/components/states';
 import { IncidentRow } from '@/components/list-rows';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing, type as typeScale } from '@/theme/tokens';
+import { spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 import type { IncidentView } from '@itp/shared';
 
 const STATUS_OPTIONS = [
@@ -47,6 +49,8 @@ const PRIORITY_OPTIONS = [
 ] as const;
 
 export default function WorkScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { user } = useAuth();
   const userId = user?.id ?? '';
   const [search, setSearch] = useState('');
@@ -186,7 +190,8 @@ export default function WorkScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

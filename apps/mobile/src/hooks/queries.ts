@@ -113,6 +113,17 @@ export function useMachine(userId: string, id: string) {
   });
 }
 
+/** Short model list for filter chips (name + id only, first page). */
+export function useMachineModelOptions(userId: string) {
+  return useQuery({
+    queryKey: qk.machineModels('options'),
+    enabled: Boolean(userId),
+    staleTime: 5 * 60_000,
+    queryFn: () => endpoints.listMachineModels({ limit: 30 }),
+    retry: false,
+  });
+}
+
 export function useMachineModelSearch(userId: string, search: string) {
   return useQuery({
     queryKey: qk.machineModels(search),

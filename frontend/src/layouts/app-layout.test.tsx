@@ -8,14 +8,17 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './app-layout';
 import { AuthProvider } from '../lib/auth';
+import { ThemeProvider } from '../lib/theme';
 
 function renderLayout(initialPath = '/status'): void {
   render(
     <MemoryRouter initialEntries={[initialPath]}>
       <AuthProvider>
-        <Routes>
-          <Route path="*" element={<AppLayout />} />
-        </Routes>
+        <ThemeProvider>
+          <Routes>
+            <Route path="*" element={<AppLayout />} />
+          </Routes>
+        </ThemeProvider>
       </AuthProvider>
     </MemoryRouter>,
   );

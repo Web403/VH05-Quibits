@@ -78,7 +78,7 @@
 }
 .app-nav__link--active {
   background: var(--color-info-bg);
-  color: #a5cdfd;
+  color: var(--content-link);
   box-shadow: inset 2px 0 0 var(--color-info);
 }
 .app-nav__icon {
@@ -128,6 +128,18 @@
   background: transparent;
   border: none;
 }
+
+.app-topbar__theme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
 .app-topbar__context { flex: 1; min-width: 0; }
 .app-topbar__homelink {
   color: var(--color-text-muted);
@@ -147,7 +159,7 @@
   height: 32px;
   border-radius: 50%;
   background: var(--color-info-bg);
-  color: #a5cdfd;
+  color: var(--content-link);
   display: inline-flex;
   align-items: center;
   justify-content: center;

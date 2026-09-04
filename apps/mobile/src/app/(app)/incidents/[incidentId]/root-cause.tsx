@@ -9,6 +9,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { useAuth } from '@/auth/auth-context';
 import { useIncident, useQueuedWrite, useRootCauseHistory } from '@/hooks/queries';
 import { useSyncEngine } from '@/hooks/use-sync';
@@ -21,9 +22,12 @@ import { can, canAttempt } from '@/lib/permissions';
 import { rootCauseStatus } from '@/lib/labels';
 import { formatDateTime } from '@/lib/format';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function RootCauseScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { incidentId } = useLocalSearchParams<{ incidentId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -206,7 +210,8 @@ export default function RootCauseScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   buttonRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },

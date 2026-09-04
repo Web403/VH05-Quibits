@@ -1,3 +1,4 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 /**
  * List row components: incident, machine, conversation, manual, action,
  * timeline event, outbox operation.
@@ -26,7 +27,8 @@ import {
   syncOpStatus,
 } from '@/lib/labels';
 import { formatBytes, formatDateTime, relativeTime } from '@/lib/format';
-import { colors, radius, spacing, type as typeScale } from '@/theme/tokens';
+import { radius, spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export interface RowAction {
   onPress: () => void;
@@ -34,6 +36,8 @@ export interface RowAction {
 }
 
 export function IncidentRow({ incident, onPress }: { incident: IncidentView; onPress: () => void }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const sev = severityPresentation(incident.severity);
   const status = incidentStatus(incident.status);
   const issue = issueStatus(incident.issueStatus);
@@ -66,6 +70,8 @@ export function IncidentRow({ incident, onPress }: { incident: IncidentView; onP
 }
 
 export function MachineRow({ machine, onPress }: { machine: MachineView; onPress: () => void }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const status = machineStatus(machine.status);
   return (
     <Pressable
@@ -97,6 +103,8 @@ export function MachineRow({ machine, onPress }: { machine: MachineView; onPress
 }
 
 export function ConversationRow({ conversation, onPress }: { conversation: ConversationListItem; onPress: () => void }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const status = conversationStatus(conversation.status);
   const issue = issueStatus(conversation.issueStatus);
   return (
@@ -124,6 +132,8 @@ export function ConversationRow({ conversation, onPress }: { conversation: Conve
 }
 
 export function ManualRow({ manual, onPress }: { manual: ManualView; onPress: () => void }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const processing = processingStatus(manual.processingStatus);
   return (
     <Pressable
@@ -159,6 +169,8 @@ export function IncidentActionRow({
   action: IncidentActionView;
   onConfirm?: () => void;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const source = actionSourceType(action.actionType);
   const result = actionResultStatus(action.resultStatus);
   return (
@@ -212,6 +224,8 @@ const TIMELINE_PRESENTATION: Record<string, { icon: string; label: string }> = {
 };
 
 export function TimelineEventRow({ event }: { event: IncidentTimelineEventView }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const presentation = TIMELINE_PRESENTATION[event.type] ?? { icon: '·', label: event.type.replace(/_/g, ' ') };
   const detail =
     event.next && typeof event.next === 'object'
@@ -242,6 +256,8 @@ export function TimelineEventRow({ event }: { event: IncidentTimelineEventView }
 
 /** Message bubble for the assistant thread. */
 export function MessageBubble({ message }: { message: MessageView }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const isUser = message.role === 'user';
   const failed = message.status === 'failed';
   return (
@@ -278,6 +294,8 @@ export function OutboxOpRow({
   onDiscard?: () => void;
   onReview?: () => void;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const presentation = syncOpStatus(op.status);
   return (
     <View style={styles.row}>
@@ -339,6 +357,8 @@ export function FixCard({
   canRecord: boolean;
   canConfirm: boolean;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.row}>
       <View style={styles.rowHeader}>
@@ -386,6 +406,8 @@ export function RootCauseCard({
   onConfirm: () => void;
   onReject: () => void;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.row}>
       <View style={styles.rowHeader}>
@@ -417,7 +439,8 @@ export function RootCauseCard({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   row: {
     backgroundColor: colors.surface,
     borderColor: colors.border,

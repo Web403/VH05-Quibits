@@ -1,11 +1,15 @@
+import { useTheme, useThemedStyles } from '@/theme/theme';
 /**
  * Loading, empty, error and offline-copy states.
  */
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from './ui';
-import { colors, radius, spacing, type as typeScale } from '@/theme/tokens';
+import { radius, spacing, type as typeScale } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export function LoadingState({ label = 'Loading…' }: { label?: string }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.container} accessibilityRole="progressbar" accessibilityLabel={label}>
       <ActivityIndicator color={colors.primary} size="large" />
@@ -16,6 +20,8 @@ export function LoadingState({ label = 'Loading…' }: { label?: string }): Reac
 
 /** Skeleton list placeholder shown instead of spinners on list screens. */
 export function SkeletonList({ rows = 4 }: { rows?: number }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View accessibilityLabel="Loading">
       {Array.from({ length: rows }).map((_, index) => (
@@ -41,6 +47,8 @@ export function EmptyState({
   onAction?: () => void;
   testID?: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.container} testID={testID} accessibilityLabel={title}>
       <Text style={styles.icon} aria-hidden>
@@ -66,6 +74,8 @@ export function ErrorState({
   requestId?: string;
   testID?: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.container} testID={testID} accessibilityLabel={`Error: ${message}`}>
       <Text style={styles.icon} aria-hidden>
@@ -81,6 +91,8 @@ export function ErrorState({
 
 /** Slim notice shown when a screen renders cached data while offline. */
 export function CachedNotice({ age }: { age: string }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.cached} accessibilityLabel="Showing a saved copy">
       <Text style={styles.cachedText}>Offline — showing a saved copy ({age}). Data may be out of date.</Text>
@@ -95,6 +107,8 @@ export function InlineBanner({
   tone?: 'info' | 'warn' | 'error' | 'ok';
   children: React.ReactNode;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const color =
     tone === 'error' ? colors.error : tone === 'warn' ? colors.warn : tone === 'ok' ? colors.ok : colors.info;
   return (
@@ -115,6 +129,8 @@ export function PressableRow({
   accessibilityLabel?: string;
   testID?: string;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       testID={testID}
@@ -128,7 +144,8 @@ export function PressableRow({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   container: {
     alignItems: 'center',
     paddingVertical: spacing.xl,

@@ -11,6 +11,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { useAuth } from '@/auth/auth-context';
 import { useIncidentActions, useQueuedWrite } from '@/hooks/queries';
 import { useSyncEngine } from '@/hooks/use-sync';
@@ -24,10 +25,13 @@ import { canAttempt } from '@/lib/permissions';
 import { actionResultStatus, actionSourceType } from '@/lib/labels';
 import { ACTION_RESULT_STATUSES, INCIDENT_ACTION_SOURCE_TYPES } from '@itp/shared';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 import { recordActionSchema } from '@/validation/schemas';
 
 export default function IncidentActionsScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { incidentId } = useLocalSearchParams<{ incidentId: string }>();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -132,6 +136,8 @@ function ActionFormDialog({
   busy: boolean;
   onSubmit: (payload: Record<string, unknown>, reset: () => void) => Promise<void>;
 }): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [actionType, setActionType] = useState<(typeof INCIDENT_ACTION_SOURCE_TYPES)[number]>('technician');
   const [description, setDescription] = useState('');
   const [result, setResult] = useState('');
@@ -294,7 +300,8 @@ function ConfirmActionDialog({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   dialogActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },

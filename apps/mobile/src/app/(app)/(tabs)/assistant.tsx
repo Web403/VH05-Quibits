@@ -7,6 +7,7 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
+import { useTheme, useThemedStyles } from '@/theme/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/auth/auth-context';
 import { useConversations } from '@/hooks/queries';
@@ -16,9 +17,12 @@ import { EmptyState, ErrorState, SkeletonList } from '@/components/states';
 import { ConversationRow } from '@/components/list-rows';
 import type { ConversationListItem } from '@/api/types';
 import { errorMessage } from '@/api/errors';
-import { colors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import type { ThemeColors } from '@/theme/tokens';
 
 export default function AssistantScreen(): React.JSX.Element {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { user } = useAuth();
   const userId = user?.id ?? '';
   const [search, setSearch] = useState('');
@@ -91,7 +95,8 @@ export default function AssistantScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   header: { marginBottom: spacing.sm },

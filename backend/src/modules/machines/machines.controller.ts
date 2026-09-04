@@ -13,6 +13,7 @@ import * as service from './machines.service.js';
 import {
   createMachineSchema,
   listMachinesSchema,
+  qrValueParamSchema,
   updateMachineSchema,
 } from './machines.validators.js';
 
@@ -45,6 +46,12 @@ export async function list(req: Request, res: Response): Promise<void> {
 export async function getById(req: Request, res: Response): Promise<void> {
   const id = parseOrThrow(objectIdSchema, req.params.id);
   const machine = await service.getById(requireDb(), toObjectId(id));
+  res.status(200).json(successEnvelope({ machine }, req.requestId));
+}
+
+export async function resolveQr(req: Request, res: Response): Promise<void> {
+  const value = parseOrThrow(qrValueParamSchema, req.params.qrValue);
+  const machine = await service.resolveQr(requireDb(), value, actorOf(req), req.requestId);
   res.status(200).json(successEnvelope({ machine }, req.requestId));
 }
 
